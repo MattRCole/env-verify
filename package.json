@@ -1,0 +1,27 @@
+{
+  "name": "y",
+  "version": "1.0.0",
+  "description": "\"Make sure you have all your env variables!\"",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [
+    "env",
+    "config"
+  ],
+  "author": "Snugbear",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^12.7.1",
+    "@types/ramda": "^0.26.19",
+    "jest": "^24.8.0",
+    "ramda": "^0.26.1"
+  },
+  "devDependencies": {
+    "@types/jest": "^24.0.17",
+    "ts-jest": "^24.0.2",
+    "typescript": "^3.5.3"
+  }
+}
