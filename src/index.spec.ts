@@ -5,22 +5,22 @@ describe('env-verify', () => {
     it('matches flat objects values to provided source keys', () => {
       const env = {
         DB_HOST: 'localhost:3000',
-        DB_NAME: 'postgres',
+        DB_NAME: 'postgres'
       }
       const flatConfig = {
         dbHost: 'DB_HOST',
-        dbName: 'DB_NAME',
+        dbName: 'DB_NAME'
       }
       const expected = {
         dbHost: 'localhost:3000',
         dbName: 'postgres'
       }
-      const results = verify(flatConfig, {env})
+      const results = verify(flatConfig, { env })
 
       expect(results.config).toEqual(expected)
     })
 
-    it('matches nested object\'s values to provided env keys', () => {
+    it("matches nested object's values to provided env keys", () => {
       const env = {
         c: 'C',
         d: 'D',
@@ -44,7 +44,7 @@ describe('env-verify', () => {
         },
         5: 'E'
       }
-      const results = verify(nestedConfig, {env})
+      const results = verify(nestedConfig, { env })
 
       expect(results.config).toEqual(expected)
     })
@@ -57,10 +57,16 @@ describe('env-verify', () => {
           1: 'a',
           2: 'zz-top',
           3: {
-            4: 'IM_MISSING'
+            6: {
+              7: 'IM_ALSO_MISSING'
+            },
+            4: 'IM_MISSING',
+            5: 'ME_TOO'
           }
         }
-        expect(verify(config, {env, exitOnError: false}).errors).not.toEqual('')
+        expect(
+          verify(config, { env, exitOnError: false }).errors.length
+        ).toEqual(4)
       })
     })
   })
