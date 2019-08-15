@@ -1,6 +1,6 @@
 import * as R from 'ramda'
 
-interface MappedConfig {
+export interface MappedConfig {
   [key: string]: string | undefined | MappedConfig
 }
 interface ConfigWithEnvKeys {
@@ -20,7 +20,7 @@ interface Options {
   logErrors: boolean
 }
 
-interface VerifiedConfig {
+export interface VerifiedConfig {
   [key: string]: string | VerifiedConfig
 }
 
