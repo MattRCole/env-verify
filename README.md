@@ -33,7 +33,10 @@ const { config, errors } = verify({
   baseUrl: 'BASE_URL'
 }, options /*see below*/)
 
-logger.error(errors)
+if (errors.length) {
+  logger.error(errors)
+}
+
 module.exports = config
 ```
 
