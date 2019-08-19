@@ -1,5 +1,5 @@
 {
-  "name": "y",
+  "name": "env-verify",
   "version": "1.0.0",
   "description": "\"Make sure you have all your env variables!\"",
   "main": "index.js",
