@@ -1,5 +1,3 @@
-import * as R from 'ramda'
-
 export interface MappedConfig {
   [key: string]: string | undefined | MappedConfig
 }
@@ -30,7 +28,8 @@ const recursiveVerify = ({
   errors = [] as Error[],
   path = ''
 }: VerifyParamCollection): VerifyParamCollection => {
-  const newConfig = R.mapObjIndexed((value, key) => {
+  const mapConf = (key: string): ConfigWithEnvKeys => {
+    const value = config[key]
     const subPath = path.length === 0 ? key : `${path}.${key}`
 
     if (typeof value === 'string') {
@@ -38,12 +37,11 @@ const recursiveVerify = ({
       if (envValue === undefined) {
         errors.push(
           new Error(
-            `environment value ${value} is missing from config file at ${subPath}`
+            `environment value ${value} is missing from config object at ${subPath}`
           )
         )
-        return envValue as undefined
       }
-      return envValue as string
+      return { [key]: envValue } as ConfigWithEnvKeys
     } else {
       const { errors: subErrors, config: subConfig } = recursiveVerify({
         config: value,
@@ -52,9 +50,15 @@ const recursiveVerify = ({
       })
 
       errors = errors.concat(subErrors)
-      return subConfig
+      return { [key]: subConfig }
     }
-  }, config)
+  }
+  const reduceConf = (acc: ConfigWithEnvKeys, obj: ConfigWithEnvKeys) => ({
+    ...acc,
+    ...obj
+  })
+  const mappedConf = Object.keys(config).map(mapConf)
+  const newConfig = mappedConf.reduce(reduceConf, {} as ConfigWithEnvKeys)
 
   return { config: newConfig, env, errors, path }
 }
