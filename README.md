@@ -2,7 +2,7 @@
 
 Quickly verify that incoming variables from process.env aren't `undefined`
 
-[GitHub](https://github.com/ps-dev/env-verifier)
+[GitHub](https://github.com/pluralsight/env-verifier)
 
 NPM - Coming soon!
 
@@ -42,8 +42,7 @@ module.exports = config
 
 You can pass in an `env` parameter as long as its an object that is non-nested and has key value pairs with `undefined` or `string` as their value type
 
-
-Function signature (using typescript):
+Function signatures (using typescript):
 
 ```typescript
 interface Config {
@@ -59,10 +58,11 @@ interface Env {
 }
 
 function verify(config: Config, env: Env = process.env): { config: MappedConfig, errors: string[] }
+
 function strictVerify(config: Config, env: Env = process.env): Config //Throws on .env miss
 ```
 
-use example for `strictVerify`:
+Use example for `strictVerify`:
 
 ```javascript
 module.exports = strictVerify({
@@ -81,23 +81,23 @@ This package works best with projects that have centralized config files, IE: Yo
 
 Other than that, just install the package and get going!
 
-one of these
+One of these
 
 ```bash
 npm install env-verifier
 ```
 
-and one of these
+And one of these
 
 ```javascript
 const { verify, strictVerify } = require('env-verifier')
 ```
 
-and you're all set.
+And you're all set.
 
 ## Testing
 
-after you've ran `npm install`, just run `npm test`
+After you've ran `npm install`, just run `npm test`
 
 We use jest as our testing framework
 
