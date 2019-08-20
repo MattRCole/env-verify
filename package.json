@@ -1,5 +1,5 @@
 {
-  "name": "env-verify",
+  "name": "env-verifier",
   "version": "1.0.0",
   "description": "\"Make sure you have all your env variables!\"",
   "main": "dist/index.js",
@@ -7,7 +7,8 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "prettier:watch": "npx onchange '**/*.ts' -- npx prettier --write {{changed}}",
-    "prepublish": "tsc"
+    "prepack": "tsc",
+    "build": "tsc"
   },
   "keywords": [
     "env",
