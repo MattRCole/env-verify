@@ -43,7 +43,6 @@ module.exports = config
 You can pass in an `env` parameter as long as its an object that is non-nested and has key value pairs with `undefined` or `string` as their value type
 
 
-
 Function signature (using typescript):
 
 ```typescript
