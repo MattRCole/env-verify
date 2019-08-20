@@ -8,7 +8,7 @@ NPM - Coming soon!
 
 ## Getting Started
 
-you probably have code that looks like this in your repo:
+You probably have code that looks like this in your repo:
 
 ```javascript
 module.exports = {
@@ -21,7 +21,7 @@ module.exports = {
 }
 ```
 
-simply change that to this:
+There are two functions exposed - `verify` or `strictVerify`. Use `verify` when you whant to handle your own missing values, and `strictVerify` when you want us to throw a descriptive error. Simply change your code to something like this:
 
 ```javascript
 const { config, errors } = verify({
@@ -31,7 +31,7 @@ const { config, errors } = verify({
     password: 'DB_PASSWORD'
   },
   baseUrl: 'BASE_URL'
-}, options /*see below*/)
+}, env)
 
 if (errors.length) {
   logger.error(errors)
@@ -40,48 +40,30 @@ if (errors.length) {
 module.exports = config
 ```
 
-The following options can be passed into the verify function:
+You can pass in an `env` parameter as long as its an object that is non-nested and has key value pairs with `undefined` or `string` as their value type
 
-```javascript
-const options = {
-  env: process.env, //default
-  logErrors: true, //default, uses console.error to log
-  exitOnError: true, //default, uses process.exit(1)
-}
 
-verify(config, options)
-```
 
-the `env` option can be replaced by any object that is non-nested and has key value pairs with `undefined` or `string` as their value type
-
-the function returns the following:
-
-### config
-
-- Nested object where .env key has been replaced by the .env value (`string` or `undefined`)
-
-### errors
-
-- `string` `array` of messages about missing `.env` values
-- should be logged if `logErrors` option is set to `false`
-
-alterativly, the `verifyStrict` function can be used.
-
-function signature (using typescript):
+Function signature (using typescript):
 
 ```typescript
 interface Config {
   [key: string]: string | Config
 }
 
+interface MappedConfig {
+  [key: string]: string | undefined | Config
+}
+
 interface Env {
   [key: string]: string | undefined
 }
 
-function strictVerify(config: Config, env: Env = process.env): Config
+function verify(config: Config, env: Env = process.env): { config: MappedConfig, errors: string[] }
+function strictVerify(config: Config, env: Env = process.env): Config //Throws on .env miss
 ```
 
-use example:
+use example for `strictVerify`:
 
 ```javascript
 module.exports = strictVerify({
@@ -92,13 +74,11 @@ module.exports = strictVerify({
   },
   baseUrl: 'BASE_URL'
 })
-
-//if .env values are missing, strictVerify will log errors and immidiately exit
 ```
 
 ### Prerequisites
 
-This package works best with projects that have centralized config files, IE: You map your `.env` variables to a `config` object in a file, and `import`/`require` that file wherever you need `.env` values.
+This package works best with projects that have centralized config files, IE: You map your `.env` variables to a `config` object in a file, and `import`/`require` that config object wherever you need `.env` values.
 
 Other than that, just install the package and get going!
 
@@ -111,7 +91,7 @@ npm install env-verifier
 and one of these
 
 ```javascript
-const verify = require('env-verifier').verify
+const { verify, strictVerify } = require('env-verifier')
 ```
 
 and you're all set.

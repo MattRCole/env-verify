@@ -12,12 +12,6 @@ interface VerifyParamCollection {
   path?: string
 }
 
-interface Options {
-  env: { [key: string]: string | undefined }
-  exitOnError: boolean
-  logErrors: boolean
-}
-
 export interface VerifiedConfig {
   [key: string]: string | VerifiedConfig
 }
@@ -65,20 +59,10 @@ const recursiveVerify = ({
 
 export function verify(
   config: ConfigWithEnvKeys,
-  options?: Partial<Options>
+  env: { [key: string]: string | undefined } = process.env
 ): { config: MappedConfig; errors: string[] } {
-  const { env, exitOnError, logErrors } = {
-    env: process.env,
-    exitOnError: true,
-    logErrors: true,
-    ...options
-  }
   const { config: builtConfig, errors } = recursiveVerify({ config, env })
 
-  if (errors.length !== 0) {
-    logErrors && errors.forEach((error: Error) => console.error(error.message))
-    exitOnError && process.exit(1)
-  }
   const errorMessages = errors.map(
     ({ message }: { message: string }) => message
   )
@@ -88,7 +72,12 @@ export function verify(
 
 export function strictVerify(
   config: ConfigWithEnvKeys,
-  env: { [key: string]: string | undefined }
+  env: { [key: string]: string | undefined } = process.env
 ): VerifiedConfig {
-  return verify(config, { env }).config as VerifiedConfig
+  const { config: builtConfig, errors } = verify(config, env)
+
+  if (errors.length > 0) {
+    throw new Error(`Missing configuration values: ${errors.join('\n')}`)
+  }
+  return builtConfig as VerifiedConfig
 }
