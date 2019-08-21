@@ -4,7 +4,7 @@ Quickly verify that incoming variables from process.env aren't `undefined`
 
 [GitHub](https://github.com/pluralsight/env-verifier)
 
-NPM - Coming soon!
+[NPM](https://npmjs.com/package/env-verifier)
 
 ## Getting Started
 
@@ -107,13 +107,13 @@ Please read [CONTRIBUTING.md](CONSTRIBUTING.md) for details on our code of condu
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/pluralsight/env-verifier/tags).
 
 ## Authors
 
 - **Snugbear** - *Initial work*
 
-See also the list of [contributors](https://github.com/ps-dev/env-verifier/contributors) who participated in this project.
+See also the list of [contributors](https://github.com/pluralsight/env-verifier/contributors) who participated in this project.
 
 ## License
 
