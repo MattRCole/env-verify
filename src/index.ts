@@ -28,7 +28,7 @@ const recursiveVerify = ({
 
     if (typeof value === 'string') {
       const envValue = env[value]
-      if (envValue === undefined) {
+      if (envValue === undefined || envValue.length === 0) {
         errors.push(
           new Error(
             `environment value ${value} is missing from config object at ${subPath}`
