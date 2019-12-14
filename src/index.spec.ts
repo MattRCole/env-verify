@@ -1,4 +1,4 @@
-import { verify, strictVerify, Config } from './index'
+import { verify, strictVerify, ConfigWithEnvKeys, insert } from './index'
 
 describe('env-verify', () => {
   describe('verify', () => {
@@ -76,7 +76,7 @@ describe('env-verify', () => {
       PRESENT: 'present'
     }
     it('allows a tuple with a string and transform function', () => {
-      const configObj: Config = {
+      const configObj: ConfigWithEnvKeys = {
         present: ['PRESENT', (envVal: string): any => envVal]
       }
 
@@ -84,7 +84,7 @@ describe('env-verify', () => {
     })
 
     it('allows the same tuple in a nested object', () => {
-      const configObj: Config = {
+      const configObj: ConfigWithEnvKeys = {
         nested: {
           present: ['PRESENT', (envVal: string) => envVal]
         }
@@ -98,7 +98,7 @@ describe('env-verify', () => {
       const transformed = ['hi', { there: ['this'] }, 'is', 'transformed']
       const expected = expect.objectContaining(transformed)
 
-      const configObj: Config = {
+      const configObj: ConfigWithEnvKeys = {
         present: ['PRESENT', (_envVal: string) => transformed]
       }
 
@@ -108,7 +108,7 @@ describe('env-verify', () => {
     })
 
     it('still returns an error if the env value is missing', () => {
-      const configObj: Config = {
+      const configObj: ConfigWithEnvKeys = {
         missing: ['MISSING', (envValue: string) => envValue]
       }
 
@@ -164,6 +164,74 @@ describe('env-verify', () => {
       }
 
       expect(strictVerify(config, env)).toEqual(expected)
+    })
+  })
+
+  describe('with insert()', () => {
+    const env = {
+      PRESENT: 'present'
+    }
+    it('does not error out when called with insert()', () => {
+      const configObj = {
+        nonEnvValue: insert('nonEnvValue')
+      }
+
+      expect(() => verify(configObj, env)).not.toThrow()
+    })
+
+    it('inserts the given value into config object', () => {
+      const configObj = {
+        nonEnvValue: insert('nonEnvValue')
+      }
+
+      const { nonEnvValue } = verify(configObj, env).config
+
+      expect(nonEnvValue).toEqual('nonEnvValue')
+    })
+
+    it('inserts given value in nested config object', () => {
+      const configObj = {
+        a: {
+          nonEnvValue: insert('nonEnvValue')
+        }
+      }
+
+      const { config } = verify(configObj, env)
+
+      expect(config.a.nonEnvValue).toEqual('nonEnvValue')
+    })
+  })
+
+  describe('integration of all features', () => {
+    const env = {
+      PRESENT: 'present'
+    }
+    it('mixes and matches features across nested config object', () => {
+      const mixed: ConfigWithEnvKeys = {
+        present: 'PRESENT',
+        transformed: ['PRESENT', (_value: string) => 'transformed'],
+        inserted: insert('inserted')
+      }
+
+      const configObj = {
+        mixed,
+        ...mixed
+      }
+
+      const expected = expect.objectContaining({
+        present: 'present',
+        transformed: 'transformed',
+        inserted: 'inserted',
+        mixed: {
+          present: 'present',
+          transformed: 'transformed',
+          inserted: 'inserted'
+        }
+      })
+
+      const { config } = verify(configObj, env)
+
+      expect(config).toEqual(expected)
     })
   })
 })

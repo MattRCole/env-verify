@@ -1,5 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+class InsertValue {
+    constructor(value) {
+        this.value = value;
+    }
+}
 const recursiveVerify = ({ config, env, errors = [], path = '' }) => {
     const mapConf = (key) => {
         const value = config[key];
@@ -12,7 +17,10 @@ const recursiveVerify = ({ config, env, errors = [], path = '' }) => {
             }
             return envValue;
         };
-        if (Array.isArray(value)) {
+        if (value instanceof InsertValue) {
+            return { [key]: value.value };
+        }
+        else if (Array.isArray(value)) {
             const [envKey, transformFn] = value;
             const envValue = getValueFromEnv(envKey);
             const transforedValue = envValue && transformFn(envValue);
@@ -54,4 +62,8 @@ function strictVerify(config, env = process.env) {
     return builtConfig;
 }
 exports.strictVerify = strictVerify;
+function insert(value) {
+    return new InsertValue(value);
+}
+exports.insert = insert;
 //# sourceMappingURL=index.js.map

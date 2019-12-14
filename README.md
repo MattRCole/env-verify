@@ -42,7 +42,7 @@ errors.foreach(error => console.error(error))
 module.exports = builtConfig
 ```
 
-This package exposes two functions - `verify` and `strictVerify`. Use `verify` (as seen above) when you want to handle reporting missing values, and `strictVerify` when you want us to throw a descriptive error.
+This package exposes two verification functions - `verify` and `strictVerify`. Use `verify` (as seen above) when you want to handle reporting missing values, and `strictVerify` when you want us to throw a descriptive error.
 
 You can pass in your own `env` object as a parameter as long as its an object that is non-nested and has key value pairs with `undefined` or `string` as their value type.
 
@@ -58,8 +58,8 @@ export interface TransformFn {
 // [envKeyName, TransformFn]
 export type TransformTuple = [string, TransformFn]
 
-interface Config {
-  [key: string]: string | TransformTuple | ConfigWithEnvKeys
+interface ConfigWithEnvKeys {
+  [key: string]: string | InsertValue | TransformTuple | ConfigWithEnvKeys
 }
 
 interface MappedConfig {
@@ -73,6 +73,8 @@ export interface VerifiedConfig {
 interface Env {
   [key: string]: string | undefined
 }
+
+function insert(value: any): InsertValue //see inserting arbitrary values below
 
 function verify(config: Config, env: Env = process.env): { config: MappedConfig, errors: string[] }
 
@@ -91,6 +93,25 @@ module.exports = strictVerify({
   },
   baseUrl: 'BASE_URL'
 })
+```
+
+#### Arbitrary value insertion
+
+You may have values that aren't present on your `env` object, but that you would like to live in your config object, this can be achieved by using the `insert()` function.
+
+```javascript
+const { verify, insert } = require('env-verifier')
+
+module.exports = verify({
+  appName: insert('my_app')
+  ... // other env key names
+})
+
+//exports:
+{
+  appName: 'my_app'
+  ... // other env values
+}
 ```
 
 #### Error generation and reporting

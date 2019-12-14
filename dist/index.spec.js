@@ -145,5 +145,60 @@ describe('env-verify', () => {
             expect(index_1.strictVerify(config, env)).toEqual(expected);
         });
     });
+    describe('with insert()', () => {
+        const env = {
+            PRESENT: 'present'
+        };
+        it('does not error out when called with insert()', () => {
+            const configObj = {
+                nonEnvValue: index_1.insert('nonEnvValue')
+            };
+            expect(() => index_1.verify(configObj, env)).not.toThrow();
+        });
+        it('inserts the given value into config object', () => {
+            const configObj = {
+                nonEnvValue: index_1.insert('nonEnvValue')
+            };
+            const { nonEnvValue } = index_1.verify(configObj, env).config;
+            expect(nonEnvValue).toEqual('nonEnvValue');
+        });
+        it('inserts given value in nested config object', () => {
+            const configObj = {
+                a: {
+                    nonEnvValue: index_1.insert('nonEnvValue')
+                }
+            };
+            const { config } = index_1.verify(configObj, env);
+            expect(config.a.nonEnvValue).toEqual('nonEnvValue');
+        });
+    });
+    describe('integration of all features', () => {
+        const env = {
+            PRESENT: 'present'
+        };
+        it('mixes and matches features across nested config object', () => {
+            const mixed = {
+                present: 'PRESENT',
+                transformed: ['PRESENT', (_value) => 'transformed'],
+                inserted: index_1.insert('inserted')
+            };
+            const configObj = {
+                mixed,
+                ...mixed
+            };
+            const expected = expect.objectContaining({
+                present: 'present',
+                transformed: 'transformed',
+                inserted: 'inserted',
+                mixed: {
+                    present: 'present',
+                    transformed: 'transformed',
+                    inserted: 'inserted'
+                }
+            });
+            const { config } = index_1.verify(configObj, env);
+            expect(config).toEqual(expected);
+        });
+    });
 });
 //# sourceMappingURL=index.spec.js.map

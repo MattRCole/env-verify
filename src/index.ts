@@ -8,13 +8,8 @@ export interface TransformFn {
 
 export type TransformTuple = [string, TransformFn]
 
-interface ConfigWithEnvKeys {
-  [key: string]: string | TransformTuple | ConfigWithEnvKeys
-}
-
-
-export interface Config {
-  [key: string]: string | TransformTuple | ConfigWithEnvKeys
+export interface ConfigWithEnvKeys {
+  [key: string]: string | InsertValue | TransformTuple | ConfigWithEnvKeys
 }
 
 interface VerifyParamCollection {
@@ -26,6 +21,13 @@ interface VerifyParamCollection {
 
 export interface VerifiedConfig {
   [key: string]: any | string | VerifiedConfig
+}
+
+class InsertValue {
+  value: any
+  constructor(value: any) {
+    this.value = value
+  }
 }
 
 const recursiveVerify = ({
@@ -51,7 +53,9 @@ const recursiveVerify = ({
       return envValue
     }
 
-    if (Array.isArray(value)) {
+    if (value instanceof InsertValue) {
+      return { [key]: value.value }
+    } else if (Array.isArray(value)) {
       const [envKey, transformFn] = value as TransformTuple
 
       const envValue = getValueFromEnv(envKey)
@@ -107,4 +111,8 @@ export function strictVerify(
     throw new Error(`Missing configuration values: ${errors.join('\n')}`)
   }
   return builtConfig as VerifiedConfig
+}
+
+export function insert(value: any): InsertValue {
+  return new InsertValue(value)
 }
