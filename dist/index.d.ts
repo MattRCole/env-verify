@@ -1,8 +1,15 @@
 export interface MappedConfig {
-    [key: string]: string | undefined | MappedConfig;
+    [key: string]: any | undefined | MappedConfig;
 }
+export interface TransformFn {
+    (envValue: string): any;
+}
+export declare type TransformTuple = [string, TransformFn];
 interface ConfigWithEnvKeys {
-    [key: string]: string | ConfigWithEnvKeys;
+    [key: string]: string | TransformTuple | ConfigWithEnvKeys;
+}
+export interface Config {
+    [key: string]: string | TransformTuple | ConfigWithEnvKeys;
 }
 export interface VerifiedConfig {
     [key: string]: string | VerifiedConfig;

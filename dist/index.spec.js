@@ -49,21 +49,66 @@ describe('env-verify', () => {
         describe('with missing values', () => {
             it('should return an error string', () => {
                 const env = {
-                    a: 'A'
+                    PRESENT: 'present'
                 };
                 const config = {
-                    1: 'a',
-                    2: 'zz-top',
+                    1: 'PRESENT',
+                    2: 'MISSING',
                     3: {
                         6: {
-                            7: 'IM_ALSO_MISSING'
+                            7: 'MISSING'
                         },
-                        4: 'IM_MISSING',
-                        5: 'ME_TOO'
+                        4: 'MISSING',
+                        5: 'MISSING'
                     }
                 };
-                expect(index_1.verify(config, env).errors.length).toEqual(4);
+                const result = index_1.verify(config, env).errors;
+                expect(result.length).toEqual(4);
             });
+        });
+    });
+    describe('with transform functions', () => {
+        const env = {
+            PRESENT: 'present'
+        };
+        it('allows a tuple with a string and transform function', () => {
+            const configObj = {
+                present: ['PRESENT', (envVal) => envVal]
+            };
+            expect(() => index_1.verify(configObj, env)).not.toThrow();
+        });
+        it('allows the same tuple in a nested object', () => {
+            const configObj = {
+                nested: {
+                    present: ['PRESENT', (envVal) => envVal]
+                }
+            };
+            const result = index_1.verify(configObj, env).config;
+            expect(result.nested.present).toEqual(env.PRESENT);
+        });
+        it('runs the transform function and inserts the transformed value', () => {
+            const transformed = ['hi', { there: ['this'] }, 'is', 'transformed'];
+            const expected = expect.objectContaining(transformed);
+            const configObj = {
+                present: ['PRESENT', (_envVal) => transformed]
+            };
+            const { present: result } = index_1.verify(configObj, env).config;
+            expect(result).toEqual(expected);
+        });
+        it('still returns an error if the env value is missing', () => {
+            const configObj = {
+                missing: ['MISSING', (envValue) => envValue]
+            };
+            const { errors } = index_1.verify(configObj, env);
+            expect(errors.length).toEqual(1);
+        });
+        it('does not call the transform function if the env value is missing', () => {
+            const transformFn = jest.fn();
+            const configObj = {
+                missing: ['MISSING', transformFn]
+            };
+            index_1.verify(configObj, env);
+            expect(transformFn).not.toHaveBeenCalled();
         });
     });
     describe('strictVerfiy', () => {

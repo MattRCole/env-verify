@@ -4,11 +4,22 @@ const recursiveVerify = ({ config, env, errors = [], path = '' }) => {
     const mapConf = (key) => {
         const value = config[key];
         const subPath = path.length === 0 ? key : `${path}.${key}`;
-        if (typeof value === 'string') {
-            const envValue = env[value];
+        const getValueFromEnv = (key) => {
+            const envValue = env[key];
             if (envValue === undefined || envValue.length === 0) {
-                errors.push(new Error(`environment value ${value} is missing from config object at ${subPath}`));
+                errors.push(new Error(`environment value ${key} is missing from config object at ${subPath}`));
+                return undefined;
             }
+            return envValue;
+        };
+        if (Array.isArray(value)) {
+            const [envKey, transformFn] = value;
+            const envValue = getValueFromEnv(envKey);
+            const transforedValue = envValue && transformFn(envValue);
+            return { [key]: transforedValue };
+        }
+        else if (typeof value === 'string') {
+            const envValue = getValueFromEnv(value);
             return { [key]: envValue };
         }
         else {

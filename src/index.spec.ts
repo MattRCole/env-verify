@@ -1,4 +1,4 @@
-import { verify, strictVerify } from './index'
+import { verify, strictVerify, Config } from './index'
 
 describe('env-verify', () => {
   describe('verify', () => {
@@ -51,23 +51,85 @@ describe('env-verify', () => {
     describe('with missing values', () => {
       it('should return an error string', () => {
         const env = {
-          a: 'A'
+          PRESENT: 'present'
         }
         const config = {
-          1: 'a',
-          2: 'zz-top',
+          1: 'PRESENT',
+          2: 'MISSING',
           3: {
             6: {
-              7: 'IM_ALSO_MISSING'
+              7: 'MISSING'
             },
-            4: 'IM_MISSING',
-            5: 'ME_TOO'
+            4: 'MISSING',
+            5: 'MISSING'
           }
         }
-        expect(verify(config, env).errors.length).toEqual(4)
+        const result = verify(config, env).errors
+
+        expect(result.length).toEqual(4)
       })
     })
   })
+
+  describe('with transform functions', () => {
+    const env = {
+      PRESENT: 'present'
+    }
+    it('allows a tuple with a string and transform function', () => {
+      const configObj: Config = {
+        present: ['PRESENT', (envVal: string): any => envVal]
+      }
+
+      expect(() => verify(configObj, env)).not.toThrow()
+    })
+
+    it('allows the same tuple in a nested object', () => {
+      const configObj: Config = {
+        nested: {
+          present: ['PRESENT', (envVal: string) => envVal]
+        }
+      }
+      const result = verify(configObj, env).config
+
+      expect(result.nested.present).toEqual(env.PRESENT)
+    })
+
+    it('runs the transform function and inserts the transformed value', () => {
+      const transformed = ['hi', { there: ['this'] }, 'is', 'transformed']
+      const expected = expect.objectContaining(transformed)
+
+      const configObj: Config = {
+        present: ['PRESENT', (_envVal: string) => transformed]
+      }
+
+      const { present: result } = verify(configObj, env).config
+
+      expect(result).toEqual(expected)
+    })
+
+    it('still returns an error if the env value is missing', () => {
+      const configObj: Config = {
+        missing: ['MISSING', (envValue: string) => envValue]
+      }
+
+      const { errors } = verify(configObj, env)
+
+      expect(errors.length).toEqual(1)
+    })
+
+    it('does not call the transform function if the env value is missing', () => {
+      const transformFn = jest.fn()
+
+      const configObj: any = {
+        missing: ['MISSING', transformFn]
+      }
+
+      verify(configObj, env)
+
+      expect(transformFn).not.toHaveBeenCalled()
+    })
+  })
+
   describe('strictVerfiy', () => {
     it('should throw an error on missing .env value', () => {
       const env = {

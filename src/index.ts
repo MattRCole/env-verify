@@ -1,8 +1,20 @@
 export interface MappedConfig {
-  [key: string]: string | undefined | MappedConfig
+  [key: string]: any | undefined | MappedConfig
 }
+
+export interface TransformFn {
+  (envValue: string): any
+}
+
+export type TransformTuple = [string, TransformFn]
+
 interface ConfigWithEnvKeys {
-  [key: string]: string | ConfigWithEnvKeys
+  [key: string]: string | TransformTuple | ConfigWithEnvKeys
+}
+
+
+export interface Config {
+  [key: string]: string | TransformTuple | ConfigWithEnvKeys
 }
 
 interface VerifyParamCollection {
@@ -26,16 +38,31 @@ const recursiveVerify = ({
     const value = config[key]
     const subPath = path.length === 0 ? key : `${path}.${key}`
 
-    if (typeof value === 'string') {
-      const envValue = env[value]
+    const getValueFromEnv = (key: string): string => {
+      const envValue = env[key]
       if (envValue === undefined || envValue.length === 0) {
         errors.push(
           new Error(
-            `environment value ${value} is missing from config object at ${subPath}`
+            `environment value ${key} is missing from config object at ${subPath}`
           )
         )
+        return undefined
       }
-      return { [key]: envValue } as ConfigWithEnvKeys
+      return envValue
+    }
+
+    if (Array.isArray(value)) {
+      const [envKey, transformFn] = value as TransformTuple
+
+      const envValue = getValueFromEnv(envKey)
+
+      const transforedValue = envValue && transformFn(envValue)
+
+      return { [key]: transforedValue }
+    } else if (typeof value === 'string') {
+      const envValue = getValueFromEnv(value as string)
+
+      return { [key]: envValue }
     } else {
       const { errors: subErrors, config: subConfig } = recursiveVerify({
         config: value,
