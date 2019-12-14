@@ -42,18 +42,20 @@ errors.foreach(error => console.error(error))
 module.exports = builtConfig
 ```
 
-This package exposes two functions - `verify` and `strictVerify`. Use `verify` (as seen above) when you want to handle your own missing values, and `strictVerify` when you want us to throw a descriptive error.
+This package exposes two functions - `verify` and `strictVerify`. Use `verify` (as seen above) when you want to handle reporting missing values, and `strictVerify` when you want us to throw a descriptive error.
 
 You can pass in your own `env` object as a parameter as long as its an object that is non-nested and has key value pairs with `undefined` or `string` as their value type.
 
 Function signatures:
 
 ```typescript
+
 export interface TransformFn {
   (envValue: string): any
 }
 
 //see below
+// [envKeyName, TransformFn]
 export type TransformTuple = [string, TransformFn]
 
 interface Config {
@@ -61,7 +63,11 @@ interface Config {
 }
 
 interface MappedConfig {
-  [key: string]: string | undefined | Config
+  [key: string]: any | string | undefined | Config
+}
+
+export interface VerifiedConfig {
+  [key: string]: any | string | VerifiedConfig
 }
 
 interface Env {
@@ -70,7 +76,7 @@ interface Env {
 
 function verify(config: Config, env: Env = process.env): { config: MappedConfig, errors: string[] }
 
-function strictVerify(config: Config, env: Env = process.env): Config //See Errors section
+function strictVerify(config: Config, env: Env = process.env): VerifiedConfig //See Errors section
 ```
 
 Use example for `strictVerify`:
@@ -111,7 +117,7 @@ const config = {
 verify(config)
 ```
 
-Transformation functions will not be run if the env value is missing.
+Transformation functions will not be run if its corresponding env value is missing.
 
 ### Prerequisites
 

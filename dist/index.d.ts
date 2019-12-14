@@ -1,5 +1,5 @@
 export interface MappedConfig {
-    [key: string]: any | undefined | MappedConfig;
+    [key: string]: any | string | undefined | MappedConfig;
 }
 export interface TransformFn {
     (envValue: string): any;
@@ -12,7 +12,7 @@ export interface Config {
     [key: string]: string | TransformTuple | ConfigWithEnvKeys;
 }
 export interface VerifiedConfig {
-    [key: string]: string | VerifiedConfig;
+    [key: string]: any | string | VerifiedConfig;
 }
 export declare function verify(config: ConfigWithEnvKeys, env?: {
     [key: string]: string | undefined;

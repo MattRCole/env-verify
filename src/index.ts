@@ -1,5 +1,5 @@
 export interface MappedConfig {
-  [key: string]: any | undefined | MappedConfig
+  [key: string]: any | string | undefined | MappedConfig
 }
 
 export interface TransformFn {
@@ -25,7 +25,7 @@ interface VerifyParamCollection {
 }
 
 export interface VerifiedConfig {
-  [key: string]: string | VerifiedConfig
+  [key: string]: any | string | VerifiedConfig
 }
 
 const recursiveVerify = ({
