@@ -1,6 +1,6 @@
 # env-verifier
 
-Quickly verify that incoming variables from process.env aren't `undefined`.
+Quickly verify that incoming variables from process.env aren't missing.
 
 [GitHub](https://github.com/pluralsight/env-verifier)
 
