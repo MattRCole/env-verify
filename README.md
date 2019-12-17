@@ -61,7 +61,9 @@ module.exports = config
 
 You can pass in your own `env` object as a parameter as long as its an object that is non-nested and has key value pairs with `undefined` or `string` as their value type.
 
-### Contents
+---
+
+## Usage Notes
 
  - [Function Signatures](#functionSignatures)
  - [Arbitrary Value Insertion](#arbitraryValueInsertion)
