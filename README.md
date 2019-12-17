@@ -115,7 +115,7 @@ const { verify, insert } = require('env-verifier')
 module.exports = verify({
   appName: insert('my_app')
   ... // other env key names
-})
+}).config
 
 //exports:
 {
