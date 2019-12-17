@@ -42,7 +42,8 @@ This package exposes two verification functions - `verify` and `strictVerify`. U
 Use example for `verify`:
 
 ```javascript
-//will throw on undefined or empty string env variables
+const { verify } = require('env-verifier')
+
 const { config, errors } = verify({
   database: {
     name: 'DB_NAME'
@@ -71,14 +72,13 @@ You can pass in your own `env` object as a parameter as long as its an object th
 #### <a name="functionSignatures"><a/> Function signatures
 
 ```typescript
-
-export interface TransformFn {
+interface TransformFn {
   (envValue: string): any
 }
 
 //see below
 // [envKeyName, TransformFn]
-export type TransformTuple = [string, TransformFn]
+type TransformTuple = [string, TransformFn]
 
 interface ConfigWithEnvKeys {
   [key: string]: string | InsertValue | TransformTuple | ConfigWithEnvKeys
@@ -88,7 +88,7 @@ interface MappedConfig {
   [key: string]: any | string | undefined | Config
 }
 
-export interface VerifiedConfig {
+interface VerifiedConfig {
   [key: string]: any | string | VerifiedConfig
 }
 
@@ -129,7 +129,7 @@ Error reports are generated when an `env` variable is missing. An `env` variable
  - `undefined` is returned from the `env` object.
  - an empty string, `''`, is returned from the `env` object.
  
- `verify` will always return the errors array, but it will be empty upon success.
+ `verify` will always return the errors array, but it will be an empty array if there are no `env` misses.
 
 `strictVerify` will not throw an error on the first encountered missing `env` value. Instead it will continue in order to report all missing `env` variables.
 
