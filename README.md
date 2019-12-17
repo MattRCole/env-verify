@@ -43,7 +43,7 @@ Use example for `verify`:
 
 ```javascript
 //will throw on undefined or empty string env variables
-const { config, errors } = strictVerify({
+const { config, errors } = verify({
   database: {
     name: 'DB_NAME'
     host: 'DB_HOST'
