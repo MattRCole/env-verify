@@ -39,6 +39,25 @@ module.exports = strictVerify({
 
 This package exposes two verification functions - `verify` and `strictVerify`. Use `verify` (as seen below) when you want to handle reporting missing values, and `strictVerify` (as seen above) when you want, when any `env` misses are encountered, us to throw a descriptive error containing all `env` misses.
 
+Use example for `verify`:
+
+```javascript
+//will throw on undefined or empty string env variables
+const { config, errors } = strictVerify({
+  database: {
+    name: 'DB_NAME'
+    host: 'DB_HOST'
+    password: 'DB_PASSWORD'
+  },
+  baseUrl: 'BASE_URL'
+})
+
+// do custom error logging, possibly throw your own errors
+errors.forEach(console.error)
+
+module.exports = config
+```
+
 You can pass in your own `env` object as a parameter as long as its an object that is non-nested and has key value pairs with `undefined` or `string` as their value type.
 
 ### Contents
@@ -82,25 +101,6 @@ function insert(value: any): InsertValue
 function verify(config: ConfigWithEnvKeys, env: Env = process.env): { config: MappedConfig, errors: string[] }
 
 function strictVerify(config: ConfigWithEnvKeys, env: Env = process.env): VerifiedConfig
-```
-
-Use example for `verify`:
-
-```javascript
-//will throw on undefined or empty string env variables
-const { config, errors } = strictVerify({
-  database: {
-    name: 'DB_NAME'
-    host: 'DB_HOST'
-    password: 'DB_PASSWORD'
-  },
-  baseUrl: 'BASE_URL'
-})
-
-// do custom error logging, possibly throw your own errors
-errors.forEach(console.error)
-
-module.exports = config
 ```
 
 #### <a name="arbitraryValueInsertion"><a/> Arbitrary Value Insertion
