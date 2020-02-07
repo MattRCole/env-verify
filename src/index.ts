@@ -15,7 +15,6 @@ export interface ConfigWithEnvKeys {
 interface VerifyParamCollection {
   config: ConfigWithEnvKeys
   env: { [key: string]: string | undefined }
-  errors?: Error[]
   path?: string
 }
 
@@ -30,29 +29,29 @@ class InsertValue {
   }
 }
 
-const getValueFromEnvFunction = (
+const getEnvValueOrErrorCurried = (
   env: { [key: string]: string },
   subPath: string
-) => (key: string): [string, Error?] => {
+) => (key: string): [string, Error[]] => {
   const envValue = env[key]
   if (envValue === undefined || envValue.length === 0) {
-    return [
-      undefined,
-      new Error(
-        `environment value ${key} is missing from config object at ${subPath}`
-      )
-    ]
+    const error = new Error(
+      `environment value ${key} is missing from config object at ${subPath}`
+    )
+    return [undefined, [error]]
   }
-  return [envValue]
+  return [envValue, [] as Error[]]
 }
 
-const getMapConfigFunction = ({ config, env, path }: VerifyParamCollection) => (
-  key: string
-): [ConfigWithEnvKeys, Error[]] => {
+const getMapConfigFunction = ({
+  config,
+  env,
+  path = ''
+}: VerifyParamCollection) => (key: string): [ConfigWithEnvKeys, Error[]] => {
   const value = config[key]
   const subPath = path.length === 0 ? key : `${path}.${key}`
 
-  const getValueFromEnv = getValueFromEnvFunction(env, subPath)
+  const getEnvValueOrError = getEnvValueOrErrorCurried(env, subPath)
 
   if (value instanceof InsertValue) {
     return [{ [key]: value.value }, []]
@@ -60,18 +59,17 @@ const getMapConfigFunction = ({ config, env, path }: VerifyParamCollection) => (
 
   if (Array.isArray(value)) {
     const [envKey, transformFn] = value as TransformTuple
-
-    const [envValue, error] = getValueFromEnv(envKey)
+    const [envValue, errors] = getEnvValueOrError(envKey)
 
     const transforedValue = envValue && transformFn(envValue)
 
-    return [{ [key]: transforedValue }, error ? [error] : []]
+    return [{ [key]: transforedValue }, errors]
   }
 
   if (typeof value === 'string') {
-    const [envValue, error] = getValueFromEnv(value as string)
+    const [envValue, errors] = getEnvValueOrError(value as string)
 
-    return [{ [key]: envValue }, error ? [error] : []]
+    return [{ [key]: envValue }, errors]
   }
 
   const { errors, config: subConfig } = recursiveVerify({
@@ -84,8 +82,8 @@ const getMapConfigFunction = ({ config, env, path }: VerifyParamCollection) => (
 }
 
 const reduceConf = (
-  acc: { config: ConfigWithEnvKeys; errors: Error[] },
-  [config, errors]: [ConfigWithEnvKeys, Error[]]
+  acc: { config: MappedConfig; errors: Error[] },
+  [config, errors]: [MappedConfig, Error[]]
 ) => {
   return {
     config: {
@@ -96,22 +94,13 @@ const reduceConf = (
   }
 }
 
-const recursiveVerify = ({
-  config,
-  env,
-  path = ''
-}: VerifyParamCollection): VerifyParamCollection => {
-  const mapConf = getMapConfigFunction({ config, env, path })
-  const mappedConf = Object.keys(config).map(mapConf)
-  const {
-    config: accumulatedConfig,
-    errors: accumulatedErrors
-  } = mappedConf.reduce(reduceConf, {
-    config: {} as ConfigWithEnvKeys,
-    errors: [] as Error[]
-  })
+const recursiveVerify = (
+  paramCollection: VerifyParamCollection
+): { config: ConfigWithEnvKeys; errors: Error[] } => {
+  const mapConf = getMapConfigFunction(paramCollection)
+  const mappedConf = Object.keys(paramCollection.config).map(mapConf)
 
-  return { config: accumulatedConfig, env, errors: accumulatedErrors, path }
+  return mappedConf.reduce(reduceConf, { config: {}, errors: [] })
 }
 
 export function verify(
