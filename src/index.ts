@@ -30,62 +30,88 @@ class InsertValue {
   }
 }
 
+const getValueFromEnvFunction = (
+  env: { [key: string]: string },
+  subPath: string
+) => (key: string): [string, Error?] => {
+  const envValue = env[key]
+  if (envValue === undefined || envValue.length === 0) {
+    return [
+      undefined,
+      new Error(
+        `environment value ${key} is missing from config object at ${subPath}`
+      )
+    ]
+  }
+  return [envValue]
+}
+
+const getMapConfigFunction = ({ config, env, path }: VerifyParamCollection) => (
+  key: string
+): [ConfigWithEnvKeys, Error[]] => {
+  const value = config[key]
+  const subPath = path.length === 0 ? key : `${path}.${key}`
+
+  const getValueFromEnv = getValueFromEnvFunction(env, subPath)
+
+  if (value instanceof InsertValue) {
+    return [{ [key]: value.value }, []]
+  }
+
+  if (Array.isArray(value)) {
+    const [envKey, transformFn] = value as TransformTuple
+
+    const [envValue, error] = getValueFromEnv(envKey)
+
+    const transforedValue = envValue && transformFn(envValue)
+
+    return [{ [key]: transforedValue }, error ? [error] : []]
+  }
+
+  if (typeof value === 'string') {
+    const [envValue, error] = getValueFromEnv(value as string)
+
+    return [{ [key]: envValue }, error ? [error] : []]
+  }
+
+  const { errors, config: subConfig } = recursiveVerify({
+    config: value,
+    env,
+    path: subPath
+  })
+
+  return [{ [key]: subConfig }, errors]
+}
+
+const reduceConf = (
+  acc: { config: ConfigWithEnvKeys; errors: Error[] },
+  [config, errors]: [ConfigWithEnvKeys, Error[]]
+) => {
+  return {
+    config: {
+      ...acc.config,
+      ...config
+    },
+    errors: acc.errors.concat(errors)
+  }
+}
+
 const recursiveVerify = ({
   config,
   env,
-  errors = [] as Error[],
   path = ''
 }: VerifyParamCollection): VerifyParamCollection => {
-  const mapConf = (key: string): ConfigWithEnvKeys => {
-    const value = config[key]
-    const subPath = path.length === 0 ? key : `${path}.${key}`
-
-    const getValueFromEnv = (key: string): string => {
-      const envValue = env[key]
-      if (envValue === undefined || envValue.length === 0) {
-        errors.push(
-          new Error(
-            `environment value ${key} is missing from config object at ${subPath}`
-          )
-        )
-        return undefined
-      }
-      return envValue
-    }
-
-    if (value instanceof InsertValue) {
-      return { [key]: value.value }
-    } else if (Array.isArray(value)) {
-      const [envKey, transformFn] = value as TransformTuple
-
-      const envValue = getValueFromEnv(envKey)
-
-      const transforedValue = envValue && transformFn(envValue)
-
-      return { [key]: transforedValue }
-    } else if (typeof value === 'string') {
-      const envValue = getValueFromEnv(value as string)
-
-      return { [key]: envValue }
-    } else {
-      const { errors: subErrors, config: subConfig } = recursiveVerify({
-        config: value,
-        env,
-        path: subPath
-      })
-
-      errors = errors.concat(subErrors)
-      return { [key]: subConfig }
-    }
-  }
-  const reduceConf = (acc: ConfigWithEnvKeys, obj: ConfigWithEnvKeys) => ({
-    ...acc,
-    ...obj
-  })
+  const mapConf = getMapConfigFunction({ config, env, path })
   const mappedConf = Object.keys(config).map(mapConf)
-  const newConfig = mappedConf.reduce(reduceConf, {} as ConfigWithEnvKeys)
+  const {
+    config: accumulatedConfig,
+    errors: accumulatedErrors
+  } = mappedConf.reduce(reduceConf, {
+    config: {} as ConfigWithEnvKeys,
+    errors: [] as Error[]
+  })
 
-  return { config: newConfig, env, errors, path }
+  return { config: accumulatedConfig, env, errors: accumulatedErrors, path }
 }
 
 export function verify(
