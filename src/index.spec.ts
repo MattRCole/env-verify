@@ -1,3 +1,5 @@
+import * as util from 'util'
+
 import {
   verify,
   strictVerify,
@@ -260,6 +262,18 @@ describe('env-verify', () => {
 
       expect(JSON.stringify(result).includes('[secret]')).toBe(true)
       expect(JSON.stringify(result).includes(env.PASSWORD)).toBe(false)
+    })
+
+    it('obuscates secrets when using util.inspect (for nodejs)', () => {
+      const configObj = {
+        password: secret('PASSWORD')
+      }
+      const { config } = verify(configObj, env)
+
+      const result = util.inspect(config, false, 2)
+
+      expect(result.includes(env.PASSWORD)).toBe(false)
+      expect(result.includes('[secret]')).toBe(true)
     })
   })
 

@@ -1,14 +1,5 @@
 export interface MappedConfig {
-  [key: string]:
-    | any
-    | string
-    | undefined
-    | MappedConfig
-    | {
-        [key: string]: {
-          reveal(): string
-        }
-      }
+  [key: string]: any | string | undefined | MappedConfig | Secret
 }
 
 export interface TransformFn {
@@ -22,7 +13,7 @@ export interface ConfigWithEnvKeys {
     | string
     | InsertValue
     | TransformTuple
-    | SecretValue
+    | SecretKey
     | ConfigWithEnvKeys
 }
 
@@ -47,34 +38,36 @@ class InsertValue {
   }
 }
 
-class SecretValue {
+class SecretKey {
   secret: string
   constructor(secret: string) {
     this.secret = secret
   }
 }
 
+export class Secret {
+  toJSON() {
+    return '[secret]'
+  }
+  reveal: { (): string }
+
+  constructor(secret: string) {
+    this.reveal = () => secret
+  }
+}
+
+const isNode = () =>
+  typeof process === 'object' && process + '' === '[object process]'
+
 const getSecretObject = (secret: string) => {
-  const secretProto = {
-    toJSON() {
-      return '[secret]'
-    },
-    toString() {
-      return '[secret]'
-    }
+  const secretObj = new Secret(secret) as any
+
+  if (isNode()) {
+    const util = require('util')
+    secretObj[util.inspect.custom] = () => '[secret]'
   }
 
-  const secretProperties = {
-    reveal: {
-      value: () => secret,
-      writable: false,
-      callable: true
-    }
-  }
-
-  const secretObj = Object.create(secretProto, secretProperties)
-
-  return secretObj
+  return secretObj as Secret
 }
 
 const getEnvValueOrErrorCurried = (
@@ -101,7 +94,7 @@ const getMapConfigFunction = ({
 
   const getEnvValueOrError = getEnvValueOrErrorCurried(env, subPath)
 
-  if (value instanceof SecretValue) {
+  if (value instanceof SecretKey) {
     const secretKey = value.secret
     const [secretValue, errors] = getEnvValueOrError(secretKey)
     return [{ [key]: getSecretObject(secretValue) }, errors]
@@ -189,6 +182,6 @@ export function insert(value: any): InsertValue {
   return new InsertValue(value)
 }
 
-export function secret(value: any) {
-  return new SecretValue(value)
+export function secret(envKey: string) {
+  return new SecretKey(envKey)
 }

@@ -67,6 +67,7 @@ You can pass in your own `env` object as a parameter as long as its an object th
 
  - [Function Signatures](#functionSignatures)
  - [Arbitrary Value Insertion](#arbitraryValueInsertion)
+ - [Secret Insertion](#secretInsertion)
  - [Error Generation and Reporting](#errorGenerationAndReporting)
  - [Variable Transformation (TransformTuple)](#variableTransformation)
  
@@ -83,20 +84,26 @@ interface TransformFn {
 type TransformTuple = [string, TransformFn]
 
 interface ConfigWithEnvKeys {
-  [key: string]: string | InsertValue | TransformTuple | ConfigWithEnvKeys
+  [key: string]: string | InsertValue | SecretKey | TransformTuple | ConfigWithEnvKeys
 }
 
 interface MappedConfig {
-  [key: string]: any | string | undefined | Config
+  [key: string]: any | string | undefined | Secret | Config
 }
 
 interface VerifiedConfig {
-  [key: string]: any | string | VerifiedConfig
+  [key: string]: any | string | Secret | VerifiedConfig
 }
 
 interface Env {
   [key: string]: string | undefined
 }
+
+class Secret {
+  reveal(): string
+}
+
+function secret(envKey: string): SecretKey
 
 function insert(value: any): InsertValue
 
@@ -122,6 +129,69 @@ module.exports = verify({
   appName: 'my_app'
   ... // other env values
 }
+```
+
+#### <a name="secretInsertion"><a/> Secret Insertion
+
+As of env-verifier version `1.2.0`, the obfuscation of env secrets is supported.
+
+by wrapping the env key of the secret in the `secret` function exported by `env-verifier`, the secret will be retrieved and wrapped in a `Secret` object (see function specification above).
+
+Note: support for transforming or inserting secrets is not supported at this time.
+
+To retrieve the secret, the `reveal` function can be called.
+
+What secret obfuscation will do:
+ - protect secrets from casual logging of the produced config object
+ - `JSON.stringify` of the config object will replace all secrets with the string `'[secret]'`
+
+What secret obfuscation will not do:
+- prevent the actually logging of the revealed secret
+- mutate the actual string returned from the `env` object
+
+```javascript
+const { verify, secret } = require('env-verifier')
+
+const env = {
+  PASSWORD: 'superSecretPassword'
+}
+
+const { config } = verify({
+  password: secret('PASSWORD')
+  ... // other env key names
+}, env)
+
+module.exports = config
+
+//exports:
+{
+  password: {
+    reveal(): string
+  }
+  ... // other env values
+}
+
+config.password.reveal()
+// returns:
+'superSecretPassword'
+
+console.log(config)
+// prints: 
+// {
+     // if you're using nodejs:
+//   password: [secret]
+     // if you're using other JS environments:
+//   password: Secret { reveal: [Function] }
+//   ... other env values
+// }
+
+JSON.stringify(config)
+// returns
+// {
+//   "password": "[secret]"
+//   ... other env values
+// }
+
 ```
 
 #### <a name="errorGenerationAndReporting"><a/> Error Generation and Reporting
@@ -154,7 +224,9 @@ Transformation functions will not be run if its corresponding env value is missi
 
 ### Prerequisites
 
-This package works best with projects that have centralized config files, IE: You map your `.env` variables to a `config` object in a file, and `import`/`require` that config object wherever you need `.env` values.
+This package is written in TypeScript and is built/distributed for environments that support the majority of the es2016 specification.
+
+This package also works best with projects that have centralized config files, IE: You map your `.env` variables to a `config` object in a file, and `import`/`require` that config object wherever you need `.env` values.
 
 Other than that, just install the package and get going!
 
