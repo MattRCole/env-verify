@@ -1,5 +1,14 @@
 export interface MappedConfig {
-  [key: string]: any | string | undefined | MappedConfig
+  [key: string]:
+    | any
+    | string
+    | undefined
+    | MappedConfig
+    | {
+        [key: string]: {
+          reveal(): string
+        }
+      }
 }
 
 export interface TransformFn {
@@ -9,6 +18,15 @@ export interface TransformFn {
 export type TransformTuple = [string, TransformFn]
 
 export interface ConfigWithEnvKeys {
+  [key: string]:
+    | string
+    | InsertValue
+    | TransformTuple
+    | SecretValue
+    | ConfigWithEnvKeys
+}
+
+export interface NotASecretObject {
   [key: string]: string | InsertValue | TransformTuple | ConfigWithEnvKeys
 }
 
@@ -29,6 +47,36 @@ class InsertValue {
   }
 }
 
+class SecretValue {
+  secret: string
+  constructor(secret: string) {
+    this.secret = secret
+  }
+}
+
+const getSecretObject = (secret: string) => {
+  const secretProto = {
+    toJSON() {
+      return '[secret]'
+    },
+    toString() {
+      return '[secret]'
+    }
+  }
+
+  const secretProperties = {
+    reveal: {
+      value: () => secret,
+      writable: false,
+      callable: true
+    }
+  }
+
+  const secretObj = Object.create(secretProto, secretProperties)
+
+  return secretObj
+}
+
 const getEnvValueOrErrorCurried = (
   env: { [key: string]: string },
   subPath: string
@@ -47,18 +95,24 @@ const getMapConfigFunction = ({
   config,
   env,
   path = ''
-}: VerifyParamCollection) => (key: string): [ConfigWithEnvKeys, Error[]] => {
+}: VerifyParamCollection) => (key: string): [MappedConfig, Error[]] => {
   const value = config[key]
   const subPath = path.length === 0 ? key : `${path}.${key}`
 
   const getEnvValueOrError = getEnvValueOrErrorCurried(env, subPath)
+
+  if (value instanceof SecretValue) {
+    const secretKey = value.secret
+    const [secretValue, errors] = getEnvValueOrError(secretKey)
+    return [{ [key]: getSecretObject(secretValue) }, errors]
+  }
 
   if (value instanceof InsertValue) {
     return [{ [key]: value.value }, []]
   }
 
   if (Array.isArray(value)) {
-    const [envKey, transformFn] = value as TransformTuple
+    const [envKey, transformFn] = (value as unknown) as TransformTuple
     const [envValue, errors] = getEnvValueOrError(envKey)
 
     const transforedValue = envValue && transformFn(envValue)
@@ -107,7 +161,10 @@ export function verify(
   config: ConfigWithEnvKeys,
   env: { [key: string]: string | undefined } = process.env
 ): { config: MappedConfig; errors: string[] } {
-  const { config: builtConfig, errors } = recursiveVerify({ config, env })
+  const { config: builtConfig, errors } = recursiveVerify({
+    config,
+    env
+  })
 
   const errorMessages = errors.map(
     ({ message }: { message: string }) => message
@@ -130,4 +187,8 @@ export function strictVerify(
 
 export function insert(value: any): InsertValue {
   return new InsertValue(value)
+}
+
+export function secret(value: any) {
+  return new SecretValue(value)
 }
