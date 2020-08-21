@@ -51,7 +51,7 @@ export class InsertValue<T> {
   }
 }
 
-class SecretKey {
+export class SecretKey {
   secret: string
   constructor(secret: string) {
     this.secret = secret
