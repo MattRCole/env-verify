@@ -44,7 +44,7 @@ export type VerifiedConfig<T> = {
     : VerifiedConfig<T[P]>
 }
 
-class InsertValue<T> {
+export class InsertValue<T> {
   value: T
   constructor(value: T) {
     this.value = value
