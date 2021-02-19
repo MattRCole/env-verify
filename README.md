@@ -302,7 +302,7 @@ Transformation functions will not be run if its corresponding env value is missi
 
 ### Dynamic Typings
 
-**Important**: as of `v1.3.0` `env-verifier` should now be able to correctly and dynamically infer the return types of both `verify` and `strictVerify` without any extra help. the below is only valid for versions that pre-date `v1.3.0`
+**Important**: as of `v1.4.0` `env-verifier` should now be able to correctly and dynamically infer the return types of both `verify` and `strictVerify` without any extra help. the below is only valid for versions that pre-date `v1.4.0`
 
 `env-verifier` tries to give typescript typings for the config object that it returns, but needs a little help to get the correct types
 
@@ -318,7 +318,7 @@ const config: {
 }
 
 const verifiedConfig = strictVerify(config)
-// pre-v1.3.0 typings:
+// pre-v1.4.0 typings:
 // typeof verifiedConfig = {
 //   a: VerifiedConfig<unknown>
 //   b: VerifiedConfig<unknown>
