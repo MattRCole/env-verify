@@ -54,7 +54,7 @@ interface VerifyParamCollection<T> {
 export type VerifiedConfig<T> = {
   [P in keyof T]: T[P] extends SecretKey
     ? Secret
-    : T[P] extends TransformTuple<infer U>
+    : T[P] extends TransformTuple_<infer U>
     ? U
     : T[P] extends InsertValue<infer U>
     ? U
