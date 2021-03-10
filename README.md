@@ -9,9 +9,12 @@ Verify that your environment variables exist, and build up your config object at
 ## Package Purpose
 
 Certain types of apps require the use of different variables depending on the environment that the app is run in.
+
 The purpose of this package is to fail early whenever one of those values is missing from the environment object (ie: `process.env`).
+
 Using this package properly will prevent the sometimes cryptic errors that occur when environment variables are missing.
-Because every missing environment variable that `env-verifier` encountered is returned (or is displayed in a thrown error), this package can also help with the: `run the app, app crashes because of missing environment variable, add environment variable` loop that sometimes occurs.
+
+Because every missing environment variable that `env-verifier` encountered is returned (or is displayed in a thrown error), this package can also help with the: `run the app, app crashes because of missing environment variable, add environment variable, repeat` loop that sometimes occurs.
 
 ## Getting Started
 
