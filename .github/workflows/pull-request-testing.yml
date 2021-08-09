@@ -1,8 +1,8 @@
 name: Pull Request Testing
-on:
-  push:
+on: 
+  pull-request:
     branches:
-      - github-workflows
+      - master
 
 jobs:
   build:
