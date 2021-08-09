@@ -1,6 +1,6 @@
 name: Pull Request Testing
 on: 
-  pull-request:
+  pull_request:
     branches:
       - master
 
