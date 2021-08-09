@@ -6,16 +6,16 @@ on:
 
 jobs:
   build:
-    name: Test and Release
+    name: Run Tests
     runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        node-version: [10.x, 12.x, 14.x, 16.x]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-      - name: Setup Node
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+      - name: With Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
         with:
-          node-version: '14'
-      - name: Install Dependencies
-        run: yarn install
-      - name: Run Tests
-        run: yarn test
+          node-version: ${{ matrix.node-version }}
+      - run: yarn install
+      - run: yarn test
