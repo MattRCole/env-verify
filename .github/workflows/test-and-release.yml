@@ -18,10 +18,19 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: ${{ matrix.node-version }}
-      - run: yarn install
-      - run: yarn test
+      - run: npm install
+      - run: npm run test
+
+  release:
+    name: NPM Release
+    runs-on: ubuntu-20.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Run Release
       - uses: actions/setup-node@v2
-          with:
-            node-version: '12'
+        with:
+          node-version: '12'
       - run: npx semantic-release
