@@ -8,6 +8,7 @@
     "test:watch": "jest --watch",
     "prettier:watch": "npx onchange '**/*.ts' -- npx prettier --write {{changed}}",
     "prepack": "tsc",
+    "prepare": "husky install",
     "build": "tsc"
   },
   "keywords": [
@@ -19,11 +20,6 @@
   ],
   "author": "Snugbear",
   "license": "MIT",
-  "husky": {
-    "hooks": {
-      "commit-msg": "commitlint -E HUSKY_GIT_PARAMS"
-    }
-  },
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
     "@commitlint/config-conventional": "^13.1.0",
