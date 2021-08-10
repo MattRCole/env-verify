@@ -1,4 +1,4 @@
-name: Pull Request Testing
+name: Test and Release
 on:
   push:
     branches:
