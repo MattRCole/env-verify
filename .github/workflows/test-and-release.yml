@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Run Release
-      - uses: actions/setup-node@v2
+        uses: actions/setup-node@v2
         with:
           node-version: '12'
       - run: npx semantic-release
