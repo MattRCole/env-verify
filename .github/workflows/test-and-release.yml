@@ -2,8 +2,8 @@ name: Test and Release
 on:
   push:
     branches:
-      - github-workflows
-  # workflow_dispatch:
+      - master
+  workflow_dispatch:
 
 jobs:
   build:
