@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - master
+      - github-workflows
   workflow_dispatch:
 
 jobs:
