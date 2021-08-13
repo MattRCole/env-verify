@@ -34,7 +34,7 @@ jobs:
         with:
           node-version: '12'
       - name: Install Dev-Dependencies
-        run: npm install
+        run: npm ci
       - name: Run Release
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
