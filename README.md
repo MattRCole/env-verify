@@ -49,7 +49,7 @@ module.exports = strictVerify({
 })
 ```
 
-This package exposes two verification functions - `verify` and `strictVerify`. Use `verify` (as seen below) when you want to handle reporting missing values, and `strictVerify` (as seen above) when you want, when any `env` misses are encountered, us to throw a descriptive error containing all `env` misses.
+This package exposes two verification functions - `verify` and `strictVerify`. Use `verify` (as seen below) when you want to handle reporting missing values, and `strictVerify` (as seen above) when you want, when any `env` misses are encountered, a descriptive error containing all `env` misses to be thrown.
 
 Use example for `verify`:
 
@@ -84,8 +84,9 @@ You can pass in your own `env` object as a parameter as long as its an object th
  - [Arbitrary Value Insertion](#arbitrary-value-insertion)
  - [Secret Insertion](#secret-insertion)
  - [Error Generation and Reporting](#error-generation-and-reporting)
- - [Variable Transformation (TransformTuple)](#variable-transformation)
+ - [Variable Transformation](#variable-transformation)
  - [Dynamic Typings](#dynamic-typings)
+ - [`env-verifier` vs `convict`](#env-verifier-vs-convict)
 
 ### Function Parameters and Return Types
 
@@ -95,6 +96,11 @@ You can pass in your own `env` object as a parameter as long as its an object th
 export function insert<T>(value: T) => Insert<T> // see `Arbitrary Value Insertion` documentation
 
 export function secret(envKey: string) => Secret // see `Secret Insertion` documentation
+
+export function transform<T>(envKey: string, transformFn: (envValue: string) => T) => T // see `Variable Transformation` documentation
+
+export function transformFP<T>(transformFn: (envValue: string) => T, envKey: string) => T
+export function transformFP<T>(transformFn: (envValue: string) => T) => ((envKey: string) => T) // see `Variable Transformation` documentation
 
 export type TransformTuple = [string, (envValue: string) => any]
 
@@ -288,26 +294,54 @@ Error reports are generated when an `env` variable is missing. An `env` variable
 
 `strictVerify` will evaluate the entire `config` object before throwing any errors in order to report all missing `env` variables
 
-### Variable Transformation (TransformTuple)
+### Variable Transformation
 
 Since `env-verifier` only takes environment key-value pair objects that have `strings` as the values, its sometimes necessary to transform those strings into something else (IE: transform the string `"true"` to a boolean `true`)
 
-This can be done by passing in an array (called a `TransformTuple` in this context) containing the `env` variable name, and the function that you would like to use to transform the `env` variable value like so:
+This can be done in two ways:
+
+1. By passing in an array (called a `TransformTuple` in this context) containing the `env` variable name, and the function that you would like to use to transform the `env` variable value
+1. By calling the `transform` function which takes the `env` variable name and the transformer function.
+
+Here is an example for both:
 
 ```javascript
 const config = {
-  useNewFeature: ['USE_NEW_FEATURE', trueOrFalse => trueOrFalse === 'true'],
+  useNewFeature: ['USE_NEW_FEATURE', trueOrFalse => trueOrFalse === 'true'], // results a boolean
+  serverHosts: ['SERVER_HOSTS', csvString => csvString.split(',')] // results in a string array
+  buildDate: transform('BUILD_DATE', dateString => new Date(dateString)) // results in a `Date` object
   ... //other env variables
 }
 
-verify(config)
+module.exports = verify(config)
 ```
 
-Transformation functions will not be run if its corresponding env value is missing.
+Functions passed to either `transform` or given in a `TransformTuple` will not be run if its corresponding env value is missing.
+
+A `transformFP` function is also provided that accepts the transforming function first and will return a partially applied function if an environment key string is not supplied:
+
+```javascript
+import { transformFP, verify } from 'env-verifier'
+
+const parseBoolean = transformFP(trueOrFalse => trueOrFalse === 'true')
+
+export const config = verify({
+  useNewFeature: parseBoolean('USE_NEW_FEATURE'), // results in a boolean value
+  hosts: transformFP(csvList => csvList.split(','), 'HOSTS') // results in a string array
+  ... other values
+})
+
+```
 
 ### Dynamic Typings
 
-**Important**: as of `v1.4.0` `env-verifier` should now be able to correctly and dynamically infer the return types of both `verify` and `strictVerify` without any extra help. the below is only valid for versions that pre-date `v1.4.0`
+---
+
+**Important**
+
+As of `v1.4.0`, `env-verifier` should now be able to correctly and dynamically infer the return types of both `verify` and `strictVerify` without any extra help. the below is only valid for versions that pre-date `v1.4.0`
+
+---
 
 `env-verifier` tries to give typescript typings for the config object that it returns, but needs a little help to get the correct types
 
@@ -360,6 +394,27 @@ const verifiedConfig = strictVerify<typeof config>(config)
 //   }
 // }
 ```
+
+### `env-verifier` vs `convict`
+
+Mozilla produces the excellent [`convict`](https://github.com/mozilla/node-convict) package that does most (if not all) of the same things that this package does. Here are a quick list of comparisons between the two:
+
+|Feature|`env-verifier`|`convict`|
+|-|-|-|
+| Config Merging | ⚠️ | ✔️ |
+| Nested Structures | ✔️ | ✔️ |
+| Environmental Variables | ✔️ | ✔️ |
+| Command-line arguments | ❌ | ✔️ |
+| Validation | ✔️ | ✔️ |
+| Secret Obfuscation | ✔️ | ✔️ |
+
+`convict` does more than what's included on the above list, and certainly more than `env-verifier` can do; so, it may be the correct choice for your project, especially if your project is a large one with many different/changing contributors.
+
+However `env-verifier` excels in the following:
+
+* Simplicity: Does one thing, and does it well
+* Size: ~8kb packed, ~18kb unpacked, 4 source files total
+* No production dependencies
 
 ## Prerequisites
 
