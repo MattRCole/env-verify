@@ -37,6 +37,7 @@ jobs:
         run: npm ci
       - name: Run Release
         env:
+          HUSKY: 0
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
           NPM_TOKEN: ${{secrets.NPM_TOKEN}}
         run: npx semantic-release
