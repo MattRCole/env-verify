@@ -1,6 +1,6 @@
 {
   "name": "env-verifier",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "\"Make sure you have all your env variables!\"",
   "main": "dist/index.js",
   "scripts": {
