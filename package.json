@@ -1,7 +1,7 @@
 {
-  "name": "env-verifier",
+  "name": "enverify",
   "version": "1.5.0",
-  "description": "\"Make sure you have all your env variables!\"",
+  "description": "Make sure you have all your env variables!",
   "main": "dist/index.js",
   "scripts": {
     "test": "jest",
@@ -13,12 +13,16 @@
   },
   "keywords": [
     "env",
-    "config"
+    "config",
+    "configuration",
+    "env-verifier",
+    "verification",
+    "environment"
   ],
   "files": [
     "dist"
   ],
-  "author": "Snugbear",
+  "author": "mattrcole",
   "license": "MIT",
   "devDependencies": {
     "@commitlint/cli": "^13.1.0",
