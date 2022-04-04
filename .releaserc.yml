@@ -2,7 +2,7 @@ branches:
   - master
   - name: '!(master)*'
     prerelease: true
-repositoryUrl: git@github.com:pluralsight/env-verifier.git
+repositoryUrl: git@github.com:mattrcole/env-verify.git
 plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"

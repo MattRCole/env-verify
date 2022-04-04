@@ -1,20 +1,17 @@
-# enverify
+# env-verify
 
 Forked from [the original](https://github.com/pluralsight/env-verifier). Why? As the soul author and maintainer of the project, I felt it was appropriate to fork the repository and continue working on this package under my own namespace so that it could be updated periodically.
-
-Why the name change? The name `enverify` was first proposed to me when I originally released the package, and, while I loved the name, I opted for a more professional name at the time. Now, a new name is needed for the package to be published to NPM, therefore, `enverify` was chosen.
-
 
 -----
 
 
 Verify that your environment variables exist, and build up your config object at the same time!
 
-![Build](https://github.com/mattrcole/enverify/actions/workflows/test-and-release.yml/badge.svg?branch=master)
+![Build](https://github.com/mattrcole/env-verify/actions/workflows/test-and-release.yml/badge.svg?branch=master)
 
-[GitHub](https://github.com/mattrcole/enverify)
+[GitHub](https://github.com/mattrcole/env-verify)
 
-[NPM](https://npmjs.com/package/enverify)
+[NPM](https://npmjs.com/package/env-verify)
 
 ## Package Purpose
 
@@ -26,7 +23,7 @@ The purpose of this package is to fail early whenever one of those values is mis
 
 Using this package properly will prevent the sometimes cryptic errors that occur when environment variables are missing.
 
-Because every missing environment variable that `enverify` encountered is returned (or is displayed in a thrown error), this package can also help with the: `run the app, app crashes because of missing environment variable, add environment variable, repeat` loop that sometimes occurs.
+Because every missing environment variable that `env-verify` encountered is returned (or is displayed in a thrown error), this package can also help with the: `run the app, app crashes because of missing environment variable, add environment variable, repeat` loop that sometimes occurs.
 
 ## Getting Started
 
@@ -46,7 +43,7 @@ module.exports = {
 to get up and running quickly with a verified config file, you can replace the above with something like this:
 
 ```javascript
-const { strictVerify } = require('enverify')
+const { strictVerify } = require('env-verify')
 
 //throws on one or more env misses
 module.exports = strictVerify({
@@ -64,7 +61,7 @@ This package exposes two verification functions - `verify` and `strictVerify`. U
 Use example for `verify`:
 
 ```javascript
-const { verify } = require('enverify')
+const { verify } = require('env-verify')
 
 const { config, missingValues } = verify({
   database: {
@@ -89,13 +86,13 @@ You can pass in your own `env` object as a parameter as long as its an object th
 
 The getting started portion of this README covers most basic use cases.
 
-Please see [usage.md](docs/usage.md) for a more in-depth guide to `enverify`'s features, and the [examples](docs/examples/README.md) folder for a few examples on how to use this package.
+Please see [usage.md](docs/usage.md) for a more in-depth guide to `env-verify`'s features, and the [examples](docs/examples/README.md) folder for a few examples on how to use this package.
 
-### `enverify` vs `convict`
+### `env-verify` vs `convict`
 
 Mozilla produces the excellent [`convict`](https://github.com/mozilla/node-convict) package that does most (if not all) of the same things that this package does. Here are a quick list of comparisons between the two:
 
-|Feature|`enverify`|`convict`|
+|Feature|`env-verify`|`convict`|
 |-|-|-|
 | Config Merging | ⚠️ | ✔️ |
 | Nested Structures | ✔️ | ✔️ |
@@ -104,9 +101,9 @@ Mozilla produces the excellent [`convict`](https://github.com/mozilla/node-convi
 | Validation | ✔️ | ✔️ |
 | Secret Obfuscation | ✔️ | ✔️ |
 
-`convict` does more than what's included on the above list, and certainly more than `enverify` can do; so, it may be the correct choice for your project, especially if your project is a large one with many different/changing contributors.
+`convict` does more than what's included on the above list, and certainly more than `env-verify` can do; so, it may be the correct choice for your project, especially if your project is a large one with many different/changing contributors.
 
-However `enverify` excels in the following:
+However `env-verify` excels in the following:
 
 * Simplicity: Does one thing, and does it well
 * Size: ~8kb packed, ~18kb unpacked, 4 source files total
@@ -123,13 +120,13 @@ Other than that, just install the package and get going!
 One of these:
 
 ```bash
-npm install enverify
+npm install env-verify
 ```
 
 And one of these:
 
 ```javascript
-const { verify, strictVerify } = require('enverify')
+const { verify, strictVerify } = require('env-verify')
 ```
 
 And you're all set.
@@ -146,7 +143,7 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduc
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/mattrcole/enverify/tags).
+We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/mattrcole/env-verify/tags).
 
 ## License
 
